@@ -97,23 +97,23 @@ Esta aplicação foi otimizada para CI/CD (Integração e Entrega Contínuas) us
     Adicione as seguintes chaves na aba "Environment":
     
     **Chave**
-    
-    **Valor (Exemplo/Descrição)**
-    
     `ConnectionStrings__DefaultConnection`
-    
+    **Valor (Exemplo/Descrição)**
     `Host=ep-xyz.aws.neon.tech;Database=neondb;Username=...;SSL Mode=Require;Trust Server Certificate=true`
     
+    **Chave**
     `Jwt__Key`
-    
+     **Valor (Exemplo/Descrição)**
     Uma frase longa e aleatória para assinar os tokens (ex: `minha_chave_super_secreta_e_segura_123`)
     
+    **Chave**
     `DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE`
-    
+    **Valor (Exemplo/Descrição)**
     `false` (Essencial para evitar erros de I/O no Linux do Render)
     
+    **Chave**
     `PORT`
-    
+    **Valor (Exemplo/Descrição)**
     `8080` (Opcional, o Render costuma detectar)
     
 4.  **Finalizar:**
@@ -130,7 +130,7 @@ Esta aplicação foi otimizada para CI/CD (Integração e Entrega Contínuas) us
 Após o deploy, a documentação interativa estará disponível em:
 
 ```
-https://[https://back.lhtecnologia.net.br/swagger/index.html](https://back.lhtecnologia.net.br/swagger/index.html)
+https://https://back.lhtecnologia.net.br/swagger/index.html
 
 
 
