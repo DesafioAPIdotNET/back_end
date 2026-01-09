@@ -1,24 +1,51 @@
+using System.Text;
+using AuthApi.Data;
+using AuthApi.Repositories;
+using AuthApi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Threading.RateLimiting;
-using AuthApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. Configuração de Logs ---
-// O Render captura automaticamente o que vai para o Console
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
-// --- 2. Configuração do Banco de Dados (Neon - PostgreSQL) ---
-// Pega a string de conexão das Variáveis de Ambiente (Segurança)
+// --- 2. Banco de Dados ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// --- 3. Rate Limiting (Proteção contra abuso) ---
-// Limita a 10 requisições a cada 10 segundos por IP
+// --- 3. Injeção de Dependência (Repositories e Services) ---
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<TokenService>();
+
+// --- 4. Configuração do JWT ---
+var secretKey = builder.Configuration["Jwt:Key"] ?? "MinhaChaveSuperSecretaDeDesenvolvimento123!";
+var key = Encoding.ASCII.GetBytes(secretKey);
+
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
+
+// --- 5. Rate Limiting e CORS ---
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -34,7 +61,6 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-// --- 4. Configuração de CORS (Segurança de Origem) ---
 var allowedOrigins = "_allowedOrigins";
 builder.Services.AddCors(options =>
 {
@@ -44,7 +70,7 @@ builder.Services.AddCors(options =>
             policy.WithOrigins(
                 "https://back.lhtecnologia.net.br", 
                 "https://front.lhtecnologia.net.br",
-                "http://localhost:3000") // Para testes locais se precisar
+                "http://localhost:3000")
             .AllowAnyHeader()
             .AllowAnyMethod();
         });
@@ -53,45 +79,59 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// --- 5. Configuração do Swagger (Documentação) ---
+// --- 6. Swagger com Suporte a JWT ---
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo 
-    { 
-        Title = "LH Tecnologia API", 
-        Version = "v1",
-        Description = "API RESTful com C# .NET 8 e PostgreSQL (Neon)"
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "LH Tecnologia Auth API", Version = "v1" });
+    
+    // Configura o botão "Authorize" no Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Insira o token JWT desta maneira: Bearer {seu_token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
     });
 });
 
 var app = builder.Build();
 
-// --- 6. Pipeline de Execução (Middleware) ---
-
-// Habilita Swagger em qualquer ambiente (Prod e Dev) para facilitar seus testes
+// --- 7. Pipeline ---
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-
-// Aplica o CORS antes de qualquer outra coisa
 app.UseCors(allowedOrigins);
-
-// Aplica o Rate Limiter
 app.UseRateLimiter();
 
+// Ordem importante: Auth -> Controllers
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();
 
-// --- 7. Migração Automática no Startup (Facilitador para o Render) ---
-// Isso cria o banco automaticamente ao subir a aplicação
+// Migração Automática
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     try 
     {
-        // Aplica migrações pendentes ou cria o banco se não existir
         dbContext.Database.Migrate();
         Console.WriteLine("Banco de dados migrado com sucesso.");
     }
@@ -101,6 +141,5 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Render usa a porta definida na variável PORT ou default 8080
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run($"http://0.0.0.0:{port}");
