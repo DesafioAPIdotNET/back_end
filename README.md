@@ -60,6 +60,7 @@ AuthApi/
 └── Data/           # Contexto do Entity Framework
 
 
+
 ```
 
 ## ☁️ Guia de Deploy (https://www.google.com/search?q=Render.com)
@@ -95,15 +96,25 @@ Esta aplicação foi otimizada para CI/CD (Integração e Entrega Contínuas) us
     
     Adicione as seguintes chaves na aba "Environment":
     
-    | Chave | Valor (Exemplo/Descrição) |
+    **Chave**
     
-    | ConnectionStrings__DefaultConnection | Host=ep-xyz.aws.neon.tech;Database=neondb;Username=...;SSL Mode=Require;Trust Server Certificate=true |
+    **Valor (Exemplo/Descrição)**
     
-    | Jwt__Key | Uma frase longa e aleatória para assinar os tokens (ex: minha_chave_super_secreta_e_segura_123) |
+    `ConnectionStrings__DefaultConnection`
     
-    | DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE | false (Essencial para evitar erros de I/O no Linux do Render) |
+    `Host=ep-xyz.aws.neon.tech;Database=neondb;Username=...;SSL Mode=Require;Trust Server Certificate=true`
     
-    | PORT | 8080 (Opcional, o Render costuma detectar) |
+    `Jwt__Key`
+    
+    Uma frase longa e aleatória para assinar os tokens (ex: `minha_chave_super_secreta_e_segura_123`)
+    
+    `DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE`
+    
+    `false` (Essencial para evitar erros de I/O no Linux do Render)
+    
+    `PORT`
+    
+    `8080` (Opcional, o Render costuma detectar)
     
 4.  **Finalizar:**
     
@@ -119,7 +130,8 @@ Esta aplicação foi otimizada para CI/CD (Integração e Entrega Contínuas) us
 Após o deploy, a documentação interativa estará disponível em:
 
 ```
-https://https://back.lhtecnologia.net.br/swagger/index.html
+https://[https://back.lhtecnologia.net.br/swagger/index.html](https://back.lhtecnologia.net.br/swagger/index.html)
+
 
 
 ```
@@ -145,6 +157,7 @@ Caso queira rodar a aplicação em sua máquina para testes:
     
     ```
     dotnet run
+    
     
     
     ```
