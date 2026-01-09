@@ -1,4 +1,4 @@
- 🛡️ LH Tecnologia - Auth Backend API
+## 🛡️ LH Tecnologia - Auth Backend API
 
 API RESTful robusta desenvolvida para o Desafio Técnico da LH Tecnologia. Este projeto provê serviços de autenticação segura, gestão de usuários e persistência de dados, servindo como a espinha dorsal para o Frontend em React.
 
