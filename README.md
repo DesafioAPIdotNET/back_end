@@ -127,10 +127,10 @@ Esta aplicação foi otimizada para CI/CD (Integração e Entrega Contínuas) us
 
 ## 🧪 Como Testar (Swagger)
 
-Após o deploy, a documentação interativa estará disponível em:
+Após o deploy, a documentação interativa estará disponível como exemplo abaixo, mas em seu dominio:
 
 ```
-Ex: https://back.lhtecnologia.net.br/swagger/index.html
+https://back.lhtecnologia.net.br/swagger/index.html
 
 
 
